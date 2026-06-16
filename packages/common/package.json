@@ -1,23 +1,22 @@
 {
-  "name": "ws",
+  "name": "@repo/common",
   "module": "index.ts",
   "type": "module",
   "private": true,
+  "exports":{
+  "./types":"./types.ts"
+  },
   "devDependencies": {
     "@types/bun": "latest",
-    "@repo/backend-common": "workspace:*",
     "@repo/typescript-config": "workspace:*"
   },
   "scripts": {
-    "dev": "bun --watch run ./index.ts"
+
   },
   "peerDependencies": {
     "typescript": "^5"
   },
   "dependencies": {
-    "@types/jsonwebtoken": "^9.0.10",
-    "@types/ws": "^8.18.1",
-    "jsonwebtoken": "^9.0.3",
-    "ws": "^8.21.0"
+    "zod": "^4.4.3"
   }
 }

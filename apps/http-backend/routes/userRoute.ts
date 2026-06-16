@@ -1,17 +1,19 @@
 import { Router } from "express";
+import { CreateUserSchema } from "@repo/common/types";
 
-const userRouter = Router()
+const userRoute = Router();
 
-userRouter.post("/singup", (res , req) =>{
+userRoute.post("/singup", (res, req) => {
+  const data = CreateUserSchema.safeParse(req.body);
+  if (!data.success) {
+    return res.json({
+      message: "incorrects inputs",
+    });
+  }
+});
 
-})
+userRoute.post("/singin", (res, req) => {});
 
-userRouter.post("/singin", (res, req)=>{
+userRoute.post("/room", (req, res) => {});
 
-})
-
-userRouter.post("/room", (res, req) =>{
-
-})
-
-export default userRouter
+export default userRoute;
