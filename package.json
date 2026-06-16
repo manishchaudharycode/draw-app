@@ -1,5 +1,5 @@
 {
-  "name": "DRAW-APP",
+  "name": "braw-app",
   "private": true,
   "scripts": {
     "build": "turbo run build",
