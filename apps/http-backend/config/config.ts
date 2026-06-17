@@ -1,7 +1,9 @@
+export const secret = process.env.JWT_SECRET || "112122221"
+
 
 import "dotenv/config";
 import { PrismaPg } from "@prisma/adapter-pg";
-import { PrismaClient } from "./generated/prisma/client";
+import { PrismaClient } from "../generated/prisma/client";
 
 const connectionString = `${process.env.DATABASE_URL}`;
 
