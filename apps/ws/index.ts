@@ -12,16 +12,22 @@ wss.on("connection", (ws, request) => {
    if (!url) {
     return 
    }
-   const queryParams = new URLSearchParams(url.split('?')[1]);
-   const token = queryParams.get('token') || ""
-   const decoded = jwt.verify(token, JWT_SECRET)
-   
-   if (typeof decoded == "string") {
-    ws.close();
-    return
-   }
 
-   if (!decoded || !(decoded as JwtPayload).userId){
+   const queryParams = new URLSearchParams(url.split('?')[1]);
+   const token = queryParams.get('token') || " "
+   console.log(token);
+   if(!token){
+    wss.emit({
+      message: "heloo"
+    })
+   }
+   const decoded = jwt.verify(token, JWT_SECRET)
+   if (typeof decoded == "string") {
+     ws.close();
+     return
+    }
+
+   if (!decoded || !(decoded as JwtPayload).id){
     ws.close();
     return
    }

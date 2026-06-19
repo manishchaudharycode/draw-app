@@ -1,33 +1,45 @@
-import type {Request, Response,  NextFunction } from "express"
-import  jwt from "jsonwebtoken";
-import { secret } from "../config/config";
+import type { Request, Response, NextFunction } from "express";
+import jwt from "jsonwebtoken";
+import { JWT_SECRET } from "@repo/backend-common/config";
 
+export const AuthMiddleware = (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  const path = req.path;
 
+  if (path.includes("/signin") || path.includes("/signup")) {
+    return next();
+  }
 
+  const authHeader = req.headers.authorization;
 
-export const AuthMiddleware = async (req:Request, res:Response, next:NextFunction)=>{
-      const path = req.path;
-      if(path.includes("/signin")|| path.includes("signup")){
-        return next()
-      }
+  if (!authHeader) {
+    return res.status(403).json({
+      msg: "Token required",
+    });
+  }
 
-      const authHeader = req.headers.authorization;
-      if (!authHeader) {
-        return res.status(403).json({
-            msg:"token required"
-        })
-      }
-      
-      const token = authHeader.split(" ")[1];
-      if(!token){
-        return res.status(401).json({
-            msg:"token missing"
-        })
-      }
-      try {
-        const decoded = jwt.verify(token, secret as string) as any
-        req.userId = decoded.id 
-      } catch (error) {
-        
-      }
-}
+  const token = authHeader.split(" ")[1];
+
+  if (!token) {
+    return res.status(401).json({
+      msg: "Token missing",
+    });
+  }
+
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET as string) as {
+      id: string;
+    };
+
+    req.userId = decoded.id;
+
+    next();
+  } catch (error) {
+    return res.status(401).json({
+      msg: "Invalid token",
+    });
+  }
+};

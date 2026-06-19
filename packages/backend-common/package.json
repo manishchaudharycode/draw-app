@@ -7,7 +7,8 @@
   "type": "module",
   "private": true,
   "devDependencies": {
-    "@types/bun": "latest"
+    "@types/bun": "latest",
+    "@repo/typescript-config": "workspace:*"
   },
   "scripts": {
     "dev": "bun --watch run ./index.ts"
@@ -16,7 +17,8 @@
     "typescript": "^5"
   },
   "dependencies": {
-    "@types/node": "^25.9.3"
+    "@types/node": "^25.9.3",
+    "dotenv": "^17.4.2"
   },
   "workspaces": [
     "apps/*",

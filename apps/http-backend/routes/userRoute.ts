@@ -1,21 +1,26 @@
 import { Router } from "express";
-import { CreateUserSchema, SinginSchema } from "@repo/common/types";
-import { prisma, secret } from "../config/config";
+import { CreateRoomSchema, CreateUserSchema, SinginSchema } from "@repo/common/types";
 import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
+import jwt, { decode } from "jsonwebtoken";
+import { prisma } from "@repo/db/client";
+import { JWT_SECRET } from "@repo/backend-common/config";
+import { AuthMiddleware } from "../middleware/authMiddleware";
 
 const userRoute = Router();
 
-userRoute.post("/singup", async (req, res) => {
+const JWT_TOKEN = JWT_SECRET;
+
+userRoute.post("/user/signup", async (req, res) => {
   try {
     const result = CreateUserSchema.safeParse(req.body);
+    console.log(result.error);
     if (!result.success) {
       return res.status(400).json({
         success: "false",
         message: "Incorrect inputs",
       });
     }
-    const { name, username, password } = result.data;
+    const { name, username, password, photo } = result.data;
 
     const existingUser = await prisma.user.findUnique({
       where: {
@@ -23,11 +28,13 @@ userRoute.post("/singup", async (req, res) => {
       },
       select: {
         name: true,
-        username: true,
         password: true,
+        photo: true,
       },
     });
-    if (!existingUser) {
+
+    console.log(existingUser);
+    if (existingUser) {
       return res.status(409).json({
         success: true,
         message: "user already exist",
@@ -42,6 +49,7 @@ userRoute.post("/singup", async (req, res) => {
         email: username,
         password: hashedPassword,
         name,
+        photo: "",
       },
       select: {
         id: true,
@@ -49,8 +57,11 @@ userRoute.post("/singup", async (req, res) => {
         name: true,
       },
     });
+
     const data = { id: user.id, name: user.name, email: user.email };
-    const token = jwt.sign(data, secret as string, { expiresIn: "30d" });
+    const token = jwt.sign(data, JWT_TOKEN, {
+      expiresIn: "30d",
+    });
 
     return res.status(200).json({
       success: true,
@@ -63,11 +74,10 @@ userRoute.post("/singup", async (req, res) => {
   }
 });
 
-userRoute.post("/singin", async (req, res) => {
-  try {
-    const { email, password } = req.body();
-
-    const validation = SinginSchema.safeParse({ email, password });
+userRoute.post("/user/signin", async (req, res) => {
+try {
+  const { username, password } = req.body;
+    const validation = SinginSchema.safeParse({ username, password });
     if (!validation.success) {
       return res.status(401).json({
         success: false,
@@ -76,7 +86,7 @@ userRoute.post("/singin", async (req, res) => {
     }
     const user = await prisma.user.findUnique({
       where: {
-        email,
+        email: username,
       },
       select: {
         email: true,
@@ -101,26 +111,59 @@ userRoute.post("/singin", async (req, res) => {
     }
 
     const data = { id: user.id, email: user.email, name: user.name };
-    const token = await jwt.sign(data, secret as string);
+    const token = await jwt.sign(data, JWT_TOKEN as string);
 
     return res.status(200).json({
-      succes:true,
-      message:"user signed in  successfully",
+      succes: true,
+      message: "user signed in  successfully",
       token,
-      user:{
-        id:user.id,
-        name:user.name,
-        email:user.email
-      }
-    })
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+      },
+    });
+} catch (error) {
+  
+}
+
+})
+
+userRoute.post("/room", AuthMiddleware, async (req, res) => {
+  const parsedData = CreateRoomSchema.safeParse(req.body);
+
+  if (!parsedData.success) {
+    return res.status(400).json({
+      success: false,
+      message: "Incorrect Inputs"
+    });
+  }
+
+  const userId = req.userId; // depends on your AuthMiddleware
+
+  try {
+    const Room = await prisma.room.create({
+  data: {
+    slug: parsedData.data.name,
+    admin: {
+      connect: {
+        id: req.userId,
+      },
+    },
+  },
+});
+    return res.status(201).json({
+      success: true,
+      Room
+    });
   } catch (error) {
     return res.status(500).json({
       success: false,
-      message :"sever error"
-    })
+      message: "Internal Server Error"
+    });
   }
 });
 
-userRoute.post("/room", (req, res) => {});
+userRoute.get("/chat", async (req, res) => {});
 
 export default userRoute;
