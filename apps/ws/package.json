@@ -6,7 +6,8 @@
   "devDependencies": {
     "@types/bun": "latest",
     "@repo/backend-common": "workspace:*",
-    "@repo/typescript-config": "workspace:*"
+    "@repo/typescript-config": "workspace:*",
+    "@repo/db":"workspace:*"
   },
   "scripts": {
     "dev": "bun --watch run ./index.ts"

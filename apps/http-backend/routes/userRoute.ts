@@ -164,6 +164,22 @@ userRoute.post("/room", AuthMiddleware, async (req, res) => {
   }
 });
 
-userRoute.get("/chat", async (req, res) => {});
+userRoute.get("/chats/:roomId", async (req, res) => {
+  const roomId = Number(req.params.roomId);
+  const messages = await prisma.room.findMany({
+    where:{
+      id: roomId
+    },
+    orderBy:{
+      id:"desc"
+    }
+    ,
+    take: 50
+  })
+  res.status(200).json({
+    messages
+  })
+
+});
 
 export default userRoute;

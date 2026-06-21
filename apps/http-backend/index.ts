@@ -11,6 +11,7 @@ app.use(cors())
 
 app.use("/api/v1", userRoute)
 
+
 app.listen(PORT, ()=>{
     console.log("sever running port", PORT);
 })
