@@ -54,6 +54,8 @@ wss.on("connection", (ws, request) => {
     return;
   }
 
+  console.log("User connected ", userId);
+
   users.push({
     userId,
     rooms: [],
@@ -63,7 +65,7 @@ wss.on("connection", (ws, request) => {
   ws.on("message", async (data) => {
     try {
       const parsedData = JSON.parse(data.toString());
-
+      console.log("message", parsedData);
       if (parsedData.type === "join-room") {
         const user = users.find((u) => u.ws === ws);
 

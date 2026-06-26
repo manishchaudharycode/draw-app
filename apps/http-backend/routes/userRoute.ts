@@ -1,5 +1,9 @@
 import { Router } from "express";
-import { CreateRoomSchema, CreateUserSchema, SinginSchema } from "@repo/common/types";
+import {
+  CreateRoomSchema,
+  CreateUserSchema,
+  SinginSchema,
+} from "@repo/common/types";
 import bcrypt from "bcryptjs";
 import jwt, { decode } from "jsonwebtoken";
 import { prisma } from "@repo/db/client";
@@ -75,8 +79,8 @@ userRoute.post("/user/signup", async (req, res) => {
 });
 
 userRoute.post("/user/signin", async (req, res) => {
-try {
-  const { username, password } = req.body;
+  try {
+    const { username, password } = req.body;
     const validation = SinginSchema.safeParse({ username, password });
     if (!validation.success) {
       return res.status(401).json({
@@ -123,11 +127,8 @@ try {
         email: user.email,
       },
     });
-} catch (error) {
-  
-}
-
-})
+  } catch (error) {}
+});
 
 userRoute.post("/room", AuthMiddleware, async (req, res) => {
   const parsedData = CreateRoomSchema.safeParse(req.body);
@@ -135,31 +136,32 @@ userRoute.post("/room", AuthMiddleware, async (req, res) => {
   if (!parsedData.success) {
     return res.status(400).json({
       success: false,
-      message: "Incorrect Inputs"
+      message: "Incorrect Inputs",
     });
   }
-
-  const userId = req.userId; // depends on your AuthMiddleware
+  /// @ts-ignore
+  const userId = req.userId;
 
   try {
     const Room = await prisma.room.create({
-  data: {
-    slug: parsedData.data.name,
-    admin: {
-      connect: {
-        id: req.userId,
+      data: {
+        slug: parsedData.data.name,
+        admin: {
+          connect: {
+            id: req.userId,
+          },
+        },
       },
-    },
-  },
-});
+    });
+    console.log(Room);
     return res.status(201).json({
       success: true,
-      Room
+      Room,
     });
   } catch (error) {
     return res.status(500).json({
       success: false,
-      message: "Internal Server Error"
+      message: "Internal Server Error",
     });
   }
 });
@@ -167,19 +169,43 @@ userRoute.post("/room", AuthMiddleware, async (req, res) => {
 userRoute.get("/chats/:roomId", async (req, res) => {
   const roomId = Number(req.params.roomId);
   const messages = await prisma.room.findMany({
-    where:{
-      id: roomId
+    where: {
+      id: roomId,
     },
-    orderBy:{
-      id:"desc"
-    }
-    ,
-    take: 50
-  })
+    orderBy: {
+      id: "desc",
+    },
+    take: 50,
+  });
   res.status(200).json({
-    messages
-  })
+    messages,
+  });
+});
 
+userRoute.get("/room/:slug", async (req, res) => {
+  try {
+    const { slug } = req.params;
+    console.log("slug:", slug);
+
+    const room = await prisma.room.findUnique({
+      where: {
+        slug: slug.trim(),
+      },
+    });
+
+    if (!room) return res.status(404).json({ message: "Room not found" });
+
+    console.log("room:", room);
+
+    return res.json({
+      id: room?.id || null,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      error,
+    });
+  }
 });
 
 export default userRoute;
