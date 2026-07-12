@@ -139,7 +139,7 @@ userRoute.post("/room", AuthMiddleware, async (req, res) => {
       message: "Incorrect Inputs",
     });
   }
-  /// @ts-ignore
+  // @ts-ignore
   const userId = req.userId;
 
   try {
@@ -167,36 +167,39 @@ userRoute.post("/room", AuthMiddleware, async (req, res) => {
 });
 
 userRoute.get("/chats/:roomId", async (req, res) => {
-  const roomId = Number(req.params.roomId);
-  const messages = await prisma.room.findMany({
-    where: {
-      id: roomId,
-    },
-    orderBy: {
-      id: "desc",
-    },
-    take: 50,
-  });
-  res.status(200).json({
-    messages,
-  });
+  try {
+    const roomId = Number(req.params.roomId);
+    console.log("RoomID", roomId);
+    const messages = await prisma.chat.findMany({
+      where: {
+        roomId,
+      },
+      orderBy: {
+        id: "desc",
+      },
+      take: 100000,
+    });
+    console.log("message", messages);
+    res.json({
+      messages,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({
+      message: "Internal Server Error",
+    });
+  }
 });
 
 userRoute.get("/room/:slug", async (req, res) => {
   try {
     const { slug } = req.params;
-    console.log("slug:", slug);
-
     const room = await prisma.room.findUnique({
       where: {
         slug: slug.trim(),
       },
     });
-
     if (!room) return res.status(404).json({ message: "Room not found" });
-
-    console.log("room:", room);
-
     return res.json({
       id: room?.id || null,
     });

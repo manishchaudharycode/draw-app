@@ -40,7 +40,7 @@ export default function RoomCanvas({ roomId }: RoomCanvasProps) {
   }
 
   return (
-    <div className="relative h-screen w-screen">
+    <div className="">
       <Canvas roomId={roomId} socket={socket} />
     </div>
   );
