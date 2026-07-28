@@ -14,8 +14,8 @@ import {
   Pencil,
   Eraser,
   Type,
-  Image,
   Minus,
+  Image as ImageIcon,
 } from "lucide-react";
 
 type Shape =
@@ -43,10 +43,10 @@ export default function Canvas({ roomId, socket }: CanvasProps) {
 
   const [selectedTool, setSelectedTool] = useState<Shape>("MousePointer2");
 
-  useEffect(()=>{
+  useEffect(() => {
     //@ts-ignore
-    window.selectedTool= selectedTool
-  },[selectedTool])
+    window.selectedTool = selectedTool;
+  }, [selectedTool]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -83,10 +83,12 @@ export default function Canvas({ roomId, socket }: CanvasProps) {
   }, [roomId, socket]);
 
   return (
-    <div className="relative h-screen overflow-hidden">
-      <canvas ref={canvasRef} className="block w-screen h-screen" />
+    <div className="relative w-full h-full overflow-auto">
+      <canvas ref={canvasRef} width={2000} height={1500} className="block" />
 
-      <Topbar selectedTool={selectedTool} setSelectedTool={setSelectedTool} />
+      <div className="fixed top-0 left-0 right-0 z-50">
+        <Topbar selectedTool={selectedTool} setSelectedTool={setSelectedTool} />
+      </div>
     </div>
   );
 }
@@ -100,8 +102,7 @@ function Topbar({ selectedTool, setSelectedTool }: TopbarProps) {
   return (
     <div className="fixed border p-2  border-neutral-500 bg-neutral-100 rounded-xl top-5 left-115">
       <div className="flex gap-2 text-black">
-        <IconButton 
-          
+        <IconButton
           activated={selectedTool === "MousePointer2"}
           icon={<MousePointer2 size={18} />}
           onClick={() => setSelectedTool("MousePointer2")}
@@ -163,7 +164,7 @@ function Topbar({ selectedTool, setSelectedTool }: TopbarProps) {
 
         <IconButton
           activated={selectedTool === "Image"}
-          icon={<Image size={18} />}
+          icon={<ImageIcon size={18} />}
           onClick={() => setSelectedTool("Image")}
         />
 
